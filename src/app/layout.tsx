@@ -4,7 +4,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import Sidebar from './components/Sidebar';
 import TopBar from './components/TopBar';
-
+import Feed from './components/Feed';
 const geistSans = Geist({
   variable: '--font-geist-sans',
   subsets: ['latin'],
@@ -29,10 +29,14 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50`}>
         <TopBar />
-        <Sidebar />
-        <main className="ml-0 lg:ml-16 lg:ml-96 transition-all duration-300 ease-in-out pt-14 min-h-screen">
-          {children}
-        </main>
+        <div className="flex min-h-screen">
+  <Sidebar />
+  
+  {/* Main content area */}
+  <main className="flex-1 overflow-auto pt-14">
+    <Feed/>
+  </main>
+</div>
       </body>
     </html>
   );

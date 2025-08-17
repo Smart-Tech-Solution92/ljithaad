@@ -128,9 +128,11 @@ const Sidebar = () => {
       <aside
         className={`
           bg-white
-          fixed top-0 left-0 h-screen
-          transition-all duration-300 ease-in-out
-          z-40
+      w-96
+      max-h-screen
+      overflow-y-auto
+      fixed lg:sticky top-0
+      scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100
           ${isCollapsed ? 'w-16' : 'w-96'}
           ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
           lg:translate-x-0
