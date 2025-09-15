@@ -1,5 +1,4 @@
-'use client';
-
+"use client";
 import { useEffect, useState } from "react";
 import PostCard from "./PostCard";
 
@@ -13,10 +12,8 @@ interface PostData {
   timestamp: string;
   upvotes: number;
   comments: number;
-  subredditIcon?: string | null;
+  subredditIcon?: string | undefined;
 }
-
-const subreddits = ["islam", "Muslim", "quran"];
 
 const Feed = () => {
   const [posts, setPosts] = useState<PostData[]>([]);
@@ -25,50 +22,29 @@ const Feed = () => {
   useEffect(() => {
     async function fetchPosts() {
       try {
-        const allPosts: PostData[] = [];
+        const res = await fetch("http://localhost:3000/api/post");
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-        for (const sub of subreddits) {
-          const res = await fetch(
-            `https://corsproxy.io/?https://www.reddit.com/r/${sub}/hot.json?limit=5`
-          );
+        const json = await res.json();
 
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          const json = await res.json();
+        const mappedPosts: PostData[] = json.posts.map((p: any) => {
+          return {
+            id: p._id,
+            title: p.title,
+            subreddit: p.channelSlug,
+            description: p.content?.slice(0, 200) || "",
+            author: p.createdBy.username,
+            timestamp: new Date(p.createdAt).toLocaleString(),
+            upvotes: p.likes.length,
+            comments: 0, 
+            image: p.images?.[0] || null,
+            subredditIcon:
+              p.subredditIcon ||
+              "https://www.redditstatic.com/desktop2x/img/favicon/android-icon-192x192.png",
+          };
+        });
 
-          const subredditPosts = json.data.children.map((p: any) => {
-            const d = p.data;
-
-            // pick image (either preview or url)
-            let image: string | null = null;
-            if (d.preview?.images?.[0]?.source?.url) {
-              image = d.preview.images[0].source.url.replace(/&amp;/g, "&");
-            } else if (
-              d.url_overridden_by_dest?.match(/\.(jpg|jpeg|png|gif)$/i)
-            ) {
-              image = d.url_overridden_by_dest;
-            }
-
-            return {
-              id: d.id,
-              title: d.title,
-              subreddit: d.subreddit,
-              description: d.selftext?.slice(0, 200) || "",
-              author: d.author,
-              timestamp: new Date(d.created_utc * 1000).toLocaleString(),
-              upvotes: d.ups,
-              comments: d.num_comments,
-              image,
-              subredditIcon:
-                d.icon_img ||
-                d.community_icon?.split("?")[0] ||
-                "https://www.redditstatic.com/desktop2x/img/favicon/android-icon-192x192.png",
-            } as PostData;
-          });
-
-          allPosts.push(...subredditPosts);
-        }
-
-        setPosts(allPosts);
+        setPosts(mappedPosts);
       } catch (err) {
         console.error("Error fetching posts:", err);
       } finally {
